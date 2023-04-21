@@ -22,6 +22,7 @@ final class AuthenticationViewModel: ObservableObject {
     }
     
     func signInAnonymously() async throws {
-        try await AuthenticationManager.shared.signInAnonymously()
+        let authDataResult = try await AuthenticationManager.shared.signInAnonymously()
+        try await UserManager.shared.createNewUser(auth: authDataResult)
     }
 }

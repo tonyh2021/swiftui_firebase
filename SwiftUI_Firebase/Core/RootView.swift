@@ -33,11 +33,11 @@ extension RootView {
     var settingNavigation: some View {
         if #available(iOS 16.0, *) {
             NavigationStack {
-                SettingsView(showSignInView: $showSignInView)
+                ProfileView(showSignInView: $showSignInView)
             }
         } else {
             NavigationView {
-                SettingsView(showSignInView: $showSignInView)
+                ProfileView(showSignInView: $showSignInView)
             }
         }
     }
