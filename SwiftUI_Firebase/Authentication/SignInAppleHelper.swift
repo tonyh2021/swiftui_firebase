@@ -12,6 +12,8 @@ import SwiftUI
 struct SignInWithAppleResult {
     let idToken: String
     let nonce: String
+    let name: String?
+    let email: String?
 }
 
 struct SignInWithAppleButtonViewRepresentable: UIViewRepresentable {
@@ -122,8 +124,11 @@ extension SignInAppleHelper: ASAuthorizationControllerDelegate {
                 print("Unable to serialize token string from data: \(appleIDToken.debugDescription)")
                 return
             }
-
-            let token = SignInWithAppleResult(idToken: idTokenString, nonce: nonce)
+            
+            let name = appleIDCredential.fullName?.givenName
+            let email = appleIDCredential.email
+            
+            let token = SignInWithAppleResult(idToken: idTokenString, nonce: nonce, name: name, email: email)
             completionHandler?(.success(token))
         }
     }
