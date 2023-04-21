@@ -43,6 +43,13 @@ final class AuthenticationManager {
         try Auth.auth().signOut()
     }
     
+    func delete() async throws {
+        guard let user = Auth.auth().currentUser else {
+            throw URLError(.badServerResponse)
+        }
+        try await user.delete()
+    }
+    
     func getProviders() throws -> [AuthProviderOption] {
         guard let providerData = Auth.auth().currentUser?.providerData else {
             throw URLError(.badServerResponse)

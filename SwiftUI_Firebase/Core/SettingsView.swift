@@ -27,6 +27,10 @@ final class SettingsViewModel: ObservableObject {
         try AuthenticationManager.shared.signOut()
     }
     
+    func deleteAccount() async throws {
+        try await AuthenticationManager.shared.delete()
+    }
+    
     func resetPassword() async throws {
         let authUse = try AuthenticationManager.shared.getAuthenticatedUser()
         guard let email = authUse.email else {
@@ -81,6 +85,18 @@ struct SettingsView: View {
                     }
                 }
             }
+            
+            Button("Delete Account") {
+                Task {
+                    do {
+                        try await vm.deleteAccount()
+                        showSignInView = true
+                    } catch {
+                        print("Error: \(error)")
+                    }
+                }
+            }
+            .foregroundColor(.red)
             
             if vm.authProviders.contains(.email) {
                 emailSectionView
