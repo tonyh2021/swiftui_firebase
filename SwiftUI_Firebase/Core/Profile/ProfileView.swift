@@ -16,6 +16,17 @@ final class ProfileViewModel: ObservableObject {
         let authDataResult = try AuthenticationManager.shared.getAuthenticatedUser()
         user = try await UserManager.shared.getUser(userId: authDataResult.uid)
     }
+    
+    func togglePremiumStatus() {
+        guard let user else {
+            return
+        }
+        let currentValue = user.isPremium ?? false
+        Task {
+            try await UserManager.shared.updateUserPremium(userId:user.userId, isPremium: !currentValue)
+            self.user = try await UserManager.shared.getUser(userId: user.userId)
+        }
+    }
 }
 
 struct ProfileView: View {
@@ -30,6 +41,12 @@ struct ProfileView: View {
                 
                 if let isAnonymous = user.isAnonymous {
                     Text("isAnonymous: \(isAnonymous.description)")
+                }
+                
+                Button {
+                    vm.togglePremiumStatus()
+                } label: {
+                    Text("User is premium: \((user.isPremium ?? false).description.capitalized)")
                 }
             }
         }
