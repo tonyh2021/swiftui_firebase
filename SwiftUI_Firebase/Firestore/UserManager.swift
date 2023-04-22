@@ -41,7 +41,9 @@ struct DBUser: Codable {
         case email = "email"
         case photoUrl = "photo_url"
         case dateCreated = "date_created"
-        case isPremium = "user_isPremium"
+        
+        case isPremium = "is_premium"
+        case userIsPremium = "user_isPremium"
     }
     
     func encode(to encoder: Encoder) throws {
@@ -61,7 +63,11 @@ struct DBUser: Codable {
         self.email = try container.decodeIfPresent(String.self, forKey: .email)
         self.photoUrl = try container.decodeIfPresent(String.self, forKey: .photoUrl)
         self.dateCreated = try container.decodeIfPresent(Date.self, forKey: .dateCreated)
-        self.isPremium = try container.decodeIfPresent(Bool.self, forKey: .isPremium)
+        var isPremium = try container.decodeIfPresent(Bool.self, forKey: .isPremium)
+        if (isPremium == nil) {
+            isPremium = try container.decodeIfPresent(Bool.self, forKey: .userIsPremium)
+        }
+        self.isPremium = isPremium
     }
 }
 
