@@ -27,12 +27,59 @@ final class ProfileViewModel: ObservableObject {
             self.user = try await UserManager.shared.getUser(userId: user.userId)
         }
     }
+    
+    func addUserPreference(preference: String) {
+        guard let user else {
+            return
+        }
+        Task {
+            try await UserManager.shared.addUserPreference(userId:user.userId, preference:preference)
+            self.user = try await UserManager.shared.getUser(userId: user.userId)
+        }
+    }
+    
+    func removeUserPreference(preference: String) {
+        guard let user else {
+            return
+        }
+        Task {
+            try await UserManager.shared.removeUserPreference(userId:user.userId, preference:preference)
+            self.user = try await UserManager.shared.getUser(userId: user.userId)
+        }
+    }
+    
+    func addFavoriteMovie() {
+        guard let user else {
+            return
+        }
+        let movie = Movie(id: "1", title: "Avatar 2", isPopular: true)
+        Task {
+            try await UserManager.shared.addFavoriteMovie(userId:user.userId, movie:movie)
+            self.user = try await UserManager.shared.getUser(userId: user.userId)
+        }
+    }
+    
+    func removeFavoriteMovie() {
+        guard let user else {
+            return
+        }
+        Task {
+            try await UserManager.shared.removeFavoriteMovie(userId:user.userId)
+            self.user = try await UserManager.shared.getUser(userId: user.userId)
+        }
+    }
 }
 
 struct ProfileView: View {
     
     @StateObject private var vm = ProfileViewModel()
     @Binding var showSignInView: Bool
+    
+    private let preferenceOptions: [String] = ["Sports", "Movies", "Books"]
+    
+    private func preferenceSelected(_ text: String) -> Bool {
+        vm.user?.preferences?.contains(text) == true
+    }
     
     var body: some View {
         List {
@@ -48,7 +95,44 @@ struct ProfileView: View {
                 } label: {
                     Text("User is premium: \((user.isPremium ?? false).description.capitalized)")
                 }
+                
+                VStack {
+                    HStack {
+                        ForEach(preferenceOptions, id: \.self) { item in
+                            Button {
+                                if (preferenceSelected(item)) {
+                                    vm.removeUserPreference(preference: item)
+                                } else {
+                                    vm.addUserPreference(preference: item)
+                                }
+                            } label: {
+                                Text(item)
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                            .foregroundColor(Color.white)
+                            .font(.headline)
+                            .padding(.vertical, 8)
+                            .padding(.horizontal, 10)
+                            .background(preferenceSelected(item) ? Color.green : Color.red)
+                            .cornerRadius(6)
+                        }
+                    }
+                    
+                    Text("User preferences: \((user.preferences ?? []).joined(separator: ", "))")
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                
+                Button {
+                    if user.favoriteMovie != nil {
+                        vm.removeFavoriteMovie()
+                    } else {
+                        vm.addFavoriteMovie()
+                    }
+                } label: {
+                    Text("Favorite Movie: \(user.favoriteMovie?.title ?? "")")
+                }
             }
+            
         }
         .onAppear {
             Task {
