@@ -14,7 +14,7 @@ struct RootView: View {
     var body: some View {
         ZStack {
             if !showSignInView {
-                settingNavigation
+                navigation
             }
         }
         .onAppear {
@@ -22,7 +22,7 @@ struct RootView: View {
             self.showSignInView = user == nil
         }
         .fullScreenCover(isPresented: $showSignInView) {
-            navigation
+            authenticationNavigation
         }
     }
 }
@@ -30,20 +30,22 @@ struct RootView: View {
 extension RootView {
     
     @ViewBuilder
-    var settingNavigation: some View {
+    var navigation: some View {
         if #available(iOS 16.0, *) {
             NavigationStack {
-                ProfileView(showSignInView: $showSignInView)
+                ProductView()
+//                ProfileView(showSignInView: $showSignInView)
             }
         } else {
             NavigationView {
-                ProfileView(showSignInView: $showSignInView)
+                ProductView()
+//                ProfileView(showSignInView: $showSignInView)
             }
         }
     }
     
     @ViewBuilder
-    var navigation: some View {
+    var authenticationNavigation: some View {
         if #available(iOS 16.0, *) {
             NavigationStack {
                 AuthenticationView(showSignInView: $showSignInView)
