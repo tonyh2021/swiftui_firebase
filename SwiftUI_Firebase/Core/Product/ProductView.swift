@@ -46,7 +46,7 @@ final class ProductViewModel: ObservableObject {
     }
     
     func getProducts() {
-        print("lastDocument \(String(describing: lastDocument))")
+//        print("lastDocument \(String(describing: lastDocument))")
         Task {
             let (newProducts, lastDocument) = try await ProductsManager.shared.getAllProducts(descending: selectedFilterOption.priceDescending, category: selectedCategoryOption.categoryOptionParameterKey, count: 10, lastDocument: lastDocument)
             noMoreData = newProducts.count == 0
@@ -54,7 +54,14 @@ final class ProductViewModel: ObservableObject {
             if let lastDocument {
                 self.lastDocument = lastDocument
             }
-            print("lastDocument \(String(describing: lastDocument))")
+//            print("lastDocument \(String(describing: lastDocument))")
+        }
+    }
+    
+    func getProductsCount() {
+        Task {
+            let count = try await ProductsManager.shared.getAllProductsCount()
+            print("All product count: \(count)")
         }
     }
     
@@ -149,6 +156,7 @@ struct ProductView: View {
             }
         }
         .onAppear {
+            vm.getProductsCount()
             vm.getProducts()
         }
     }

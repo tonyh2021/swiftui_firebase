@@ -100,6 +100,10 @@ final class ProductsManager {
             .startOptionally(afterDocument: lastDocument)
             .getDocumentsWithSnapshot(as: Product.self)
     }
+    
+    func getAllProductsCount() async throws -> Int {
+        return try await productCollection.aggregateCount()
+    }
 }
 
 extension Query {
@@ -124,5 +128,10 @@ extension Query {
         }
         return self
             .start(afterDocument: lastDocument)
+    }
+    
+    func aggregateCount() async throws -> Int {
+        let snapshot = try await self.count.getAggregation(source: .server)
+        return snapshot.count.intValue
     }
 }
