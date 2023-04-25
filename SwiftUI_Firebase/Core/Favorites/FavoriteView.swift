@@ -10,10 +10,22 @@ import SwiftUI
 @MainActor
 final class FavoriteViewModel: ObservableObject {
     
-    @Published private(set) var products: [Product] = []
+    @Published private(set) var favoriteProducts: [UserFavoriteProduct] = []
     
-    func getFavorite() {
-        
+    func getFavoriteProducts() {
+        Task {
+            let authDataResult = try AuthenticationManager.shared.getAuthenticatedUser()
+            let favoriteProducts = try await UserManager.shared.getAllUserFavoriteProducts(authDataResult.uid)
+            self.favoriteProducts = favoriteProducts
+        }
+    }
+    
+    func removeFromFavorites(_ favoriteProductId: String) {
+        Task {
+            let authDataResult = try AuthenticationManager.shared.getAuthenticatedUser()
+            try? await UserManager.shared.removeUserFavoriteProduct(userId: authDataResult.uid, favoriteProductId: favoriteProductId)
+            getFavoriteProducts()
+        }
     }
 }
 
@@ -23,13 +35,20 @@ struct FavoriteView: View {
     
     var body: some View {
         List {
-            ForEach(vm.products) { product in
-                ProductCell(product)
+            ForEach(vm.favoriteProducts) { favoriteProduct in
+                ProductCellBuilder(productId: favoriteProduct.productId)
+                    .contextMenu {
+                        Button {
+                            vm.removeFromFavorites(favoriteProduct.id)
+                        } label: {
+                            Text("Remove from favorites")
+                        }
+                    }
             }
         }
         .navigationTitle("Favorites")
         .onAppear {
-            vm.getFavorite()
+            vm.getFavoriteProducts()
         }
     }
 }
