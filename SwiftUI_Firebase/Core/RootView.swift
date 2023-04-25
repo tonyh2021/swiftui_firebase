@@ -14,7 +14,7 @@ struct RootView: View {
     var body: some View {
         ZStack {
             if !showSignInView {
-                navigation
+                TabbarView(showSignInView: $showSignInView)
             }
         }
         .onAppear {
@@ -28,21 +28,6 @@ struct RootView: View {
 }
 
 extension RootView {
-    
-    @ViewBuilder
-    var navigation: some View {
-        if #available(iOS 16.0, *) {
-            NavigationStack {
-                ProductView()
-//                ProfileView(showSignInView: $showSignInView)
-            }
-        } else {
-            NavigationView {
-                ProductView()
-//                ProfileView(showSignInView: $showSignInView)
-            }
-        }
-    }
     
     @ViewBuilder
     var authenticationNavigation: some View {
