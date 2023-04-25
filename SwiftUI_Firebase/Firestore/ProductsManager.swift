@@ -105,35 +105,3 @@ final class ProductsManager {
         return try await productCollection.aggregateCount()
     }
 }
-
-extension Query {
-    
-    func getDocuments<T>(as type: T.Type) async throws -> [T] where T : Decodable {
-        let document = try await getDocumentsWithSnapshot(as: type).items
-        return document
-    }
-    
-    func getDocumentsWithSnapshot<T>(as type: T.Type) async throws -> (items: [T], document: DocumentSnapshot?) where T : Decodable {
-        let snapshot = try await self.getDocuments()
-        
-        let items = try snapshot.documents.map({ document in
-            return try document.data(as: T.self)
-        })
-        
-        return (items, snapshot.documents.last)
-    }
-    
-    func startOptionally(afterDocument lastDocument: DocumentSnapshot?) -> Query {
-        guard let lastDocument else {
-            return self
-        }
-        return self
-            .start(afterDocument: lastDocument)
-    }
-    
-    func aggregateCount() async throws -> Int {
-        let snapshot = try await self.count.getAggregation(source: .server)
-        return snapshot.count.intValue
-    }
-
-}
