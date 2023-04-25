@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import FirebaseFirestore
 
 @MainActor
 final class ProductViewModel: ObservableObject {
@@ -14,24 +15,46 @@ final class ProductViewModel: ObservableObject {
     @Published private(set) var selectedFilterOption: FilterOption = .noFilter
     @Published private(set) var selectedCategoryOption: CategoryOption = .noCategory
     
+    private var lastDocument: DocumentSnapshot? = nil
+    private(set) var noMoreData: Bool = true
+    
 //    func getAllProducts() async throws {
 //        products = try await ProductsManager.shared.getAllProducts(descending: selectedFilterOption?.priceDescending, category: selectedCategoryOption?.rawValue)
 //    }
     
+    func getProductsByRating() {
+        Task {
+            let (newProducts, lastDocument) = try await ProductsManager.shared.getProductsByRating(count: 4, lastDocument: lastDocument)
+            products.append(contentsOf: newProducts)
+            self.lastDocument = lastDocument
+        }
+    }
+    
     func filterSelected(option: FilterOption) async throws {
         selectedFilterOption = option
+        products = []
+        lastDocument = nil
         getProducts()
     }
     
     func categorySelected(option: CategoryOption) async throws {
         selectedCategoryOption = option
+        products = []
+        lastDocument = nil
         getProducts()
         
     }
     
     func getProducts() {
+        print("lastDocument \(String(describing: lastDocument))")
         Task {
-            products = try await ProductsManager.shared.getAllProducts(descending: selectedFilterOption.priceDescending, category: selectedCategoryOption.rawValue)
+            let (newProducts, lastDocument) = try await ProductsManager.shared.getAllProducts(descending: selectedFilterOption.priceDescending, category: selectedCategoryOption.categoryOptionParameterKey, count: 10, lastDocument: lastDocument)
+            noMoreData = newProducts.count == 0
+            products.append(contentsOf: newProducts)
+            if let lastDocument {
+                self.lastDocument = lastDocument
+            }
+            print("lastDocument \(String(describing: lastDocument))")
         }
     }
     
@@ -63,6 +86,13 @@ final class ProductViewModel: ObservableObject {
         case laptops
         case fragrances
         
+        var categoryOptionParameterKey: String? {
+            switch self {
+            case .noCategory: return nil
+            case .smartphones, .laptops, .fragrances: return rawValue
+            }
+        }
+        
         var categoryValue: String {
             switch self {
             case .noCategory: return "None"
@@ -80,8 +110,17 @@ struct ProductView: View {
     
     var body: some View {
         List {
+//            Button("Load More") {
+//                vm.getProductsByRating()
+//            }
             ForEach(vm.products) { product in
                 ProductCell(product)
+            }
+            if !vm.noMoreData {
+                ProgressView()
+                    .onAppear {
+                        vm.getProducts()
+                    }
             }
         }
         .navigationTitle("Products")
@@ -110,9 +149,7 @@ struct ProductView: View {
             }
         }
         .onAppear {
-            Task {
-                vm.getProducts()
-            }
+            vm.getProducts()
         }
     }
 }
