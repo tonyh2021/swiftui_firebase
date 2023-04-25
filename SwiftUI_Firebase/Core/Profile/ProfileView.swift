@@ -6,11 +6,15 @@
 //
 
 import SwiftUI
+import PhotosUI
 
 struct ProfileView: View {
     
     @StateObject private var vm = ProfileViewModel()
     @Binding var showSignInView: Bool
+    
+    @State private var isShowPhotoLibrary = false
+    @State private var selectedImage: UIImage?
     
     private let preferenceOptions: [String] = ["Sports", "Movies", "Books"]
     
@@ -68,14 +72,44 @@ struct ProfileView: View {
                 } label: {
                     Text("Favorite Movie: \(user.favoriteMovie?.title ?? "")")
                 }
+                
+                Button {
+                    isShowPhotoLibrary = true
+                } label: {
+                    Text("Select a photo")
+                }
+                
+                if let photoUrl = vm.user?.photoUrl, let url = URL(string: photoUrl) {
+                    AsyncImage(url: url) { image in
+                        image
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 150, height: 150)
+                            .cornerRadius(10)
+                    } placeholder: {
+                        ProgressView()
+                            .frame(width: 150, height: 150)
+                    }
+                    
+                    Button {
+                        vm.deleteProfileImage()
+                    } label: {
+                        Text("Delete photo")
+                    }
+                }
             }
-            
         }
-        .onAppear {
-            Task {
-                try? await vm.loadCurrentUser()
+        .sheet(isPresented: $isShowPhotoLibrary) {
+            ImagePicker(sourceType: .photoLibrary, selectedImage: $selectedImage)
+        }
+        .task {
+            try? await vm.loadCurrentUser()
+        }
+        .onChange(of: selectedImage, perform: { newValue in
+            if let selectedImage {
+                vm.saveProfileImage(selectedImage)
             }
-        }
+        })
         .navigationTitle("Profile")
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {

@@ -5,7 +5,7 @@
 //  Created by Tony on 2023-04-25.
 //
 
-import Foundation
+import SwiftUI
 
 @MainActor
 final class ProfileViewModel: ObservableObject {
@@ -65,6 +65,32 @@ final class ProfileViewModel: ObservableObject {
         }
         Task {
             try await UserManager.shared.removeFavoriteMovie(userId:user.userId)
+            self.user = try await UserManager.shared.getUser(userId: user.userId)
+        }
+    }
+    
+    func saveProfileImage(_ image: UIImage) {
+        guard let user else {
+            return
+        }
+        Task {
+            guard let data = image.jpegData(compressionQuality: 1.0) else {
+                return
+            }
+            let (path, _) = try await StorageManager.shared.saveImage(data: data, userId: user.userId)
+            let url = try await StorageManager.shared.getUrlForImage(path: path)
+            try await UserManager.shared.updateUserPhotoUrl(userId: user.userId, url: url.absoluteString)
+            self.user = try await UserManager.shared.getUser(userId: user.userId)
+        }
+    }
+    
+    func deleteProfileImage() {
+        guard let user, let url = user.photoUrl else {
+            return
+        }
+        Task {
+            try await StorageManager.shared.deleteImage(url: url)
+            try await UserManager.shared.updateUserPhotoUrl(userId: user.userId, url: nil)
             self.user = try await UserManager.shared.getUser(userId: user.userId)
         }
     }

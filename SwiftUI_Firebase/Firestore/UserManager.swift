@@ -174,6 +174,13 @@ final class UserManager {
         try await userDocument(userId).updateData(data)
     }
     
+    func updateUserPhotoUrl(userId: String, url: String?) async throws {
+        let data: [String: Any] = [
+            DBUser.CodingKeys.photoUrl.rawValue: url ?? NSNull()
+        ]
+        try await userDocument(userId).updateData(data)
+    }
+    
     func addUserPreference(userId: String, preference: String) async throws {
         let data: [String: Any] = [
             DBUser.CodingKeys.preferences.rawValue: FieldValue.arrayUnion([preference])
