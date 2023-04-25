@@ -155,14 +155,8 @@ struct ProfileView: View {
 
 struct ProfileView_Previews: PreviewProvider {
     static var previews: some View {
-        if #available(iOS 16.0, *) {
-            NavigationStack {
-                ProfileView(showSignInView: .constant(false))
-            }
-        } else {
-            NavigationView {
-                ProfileView(showSignInView: .constant(false))
-            }
+        AdaptableNavigation {
+            ProfileView(showSignInView: .constant(false))
         }
     }
 }

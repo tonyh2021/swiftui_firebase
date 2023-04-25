@@ -134,4 +134,5 @@ extension Query {
         let snapshot = try await self.count.getAggregation(source: .server)
         return snapshot.count.intValue
     }
+
 }

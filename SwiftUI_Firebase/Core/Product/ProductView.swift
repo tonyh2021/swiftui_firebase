@@ -109,6 +109,13 @@ final class ProductViewModel: ObservableObject {
             }
         }
     }
+    
+    func addUserFavoriteProduct(productId: Int) {
+        Task {
+            let authDataResult = try AuthenticationManager.shared.getAuthenticatedUser()
+            try? await UserManager.shared.addUserFavoriteProduct(userId: authDataResult.uid, productId: productId)
+        }
+    }
 }
 
 struct ProductView: View {
@@ -122,6 +129,13 @@ struct ProductView: View {
 //            }
             ForEach(vm.products) { product in
                 ProductCell(product)
+                    .contextMenu {
+                        Button {
+                            vm.addUserFavoriteProduct(productId: product.id)
+                        } label: {
+                            Text("Add to favorites")
+                        }
+                    }
             }
             if !vm.noMoreData {
                 ProgressView()
@@ -164,7 +178,7 @@ struct ProductView: View {
 
 struct ProductView_Previews: PreviewProvider {
     static var previews: some View {
-        NavigationView {
+        AdaptableNavigation {
             ProductView()
         }
     }

@@ -108,6 +108,14 @@ final class UserManager {
         userCollection.document(userId)
     }
     
+    private func userFavoriteProductCollection(_ userId: String) -> CollectionReference {
+        userDocument(userId).collection("favorite_products")
+    }
+    
+    private func userFavoriteProductDocument(_ userId: String, productId: Int) -> DocumentReference {
+        userFavoriteProductCollection(userId).document(String(productId))
+    }
+    
     private let encoder: Firestore.Encoder = {
         let encoder = Firestore.Encoder()
         encoder.keyEncodingStrategy = .convertToSnakeCase
@@ -192,5 +200,22 @@ final class UserManager {
             DBUser.CodingKeys.favoriteMovie.rawValue: nil
         ]
         try await userDocument(userId).updateData(data as [AnyHashable : Any])
+    }
+    
+    
+    func addUserFavoriteProduct(userId: String, productId: Int) async throws {
+        let document = userFavoriteProductCollection(userId).document()
+        let documentId = document.documentID
+        
+        let data: [String: Any] = [
+            "id": documentId,
+            "product_id": productId,
+            "date_created": Timestamp()
+        ]
+        try await document.setData(data, merge: false)
+    }
+    
+    func removeUserFavoriteProduct(userId: String, productId: Int) async throws {
+        try await userFavoriteProductDocument(userId, productId: productId).delete()
     }
 }

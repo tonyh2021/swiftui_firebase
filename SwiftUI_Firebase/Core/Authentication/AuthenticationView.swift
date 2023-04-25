@@ -83,14 +83,8 @@ struct AuthenticationView: View {
 
 struct AuthenticationView_Previews: PreviewProvider {
     static var previews: some View {
-        if #available(iOS 16.0, *) {
-            NavigationStack {
-                AuthenticationView(showSignInView: .constant(true))
-            }
-        } else {
-            NavigationView {
-                AuthenticationView(showSignInView: .constant(true))
-            }
+        AdaptableNavigation {
+            AuthenticationView(showSignInView: .constant(true))
         }
     }
 }
