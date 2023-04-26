@@ -42,7 +42,7 @@ struct CrashView: View {
                 Button {
                     CrashManager.shared.log("Button 1 tapped")
                     let s1: String? = nil
-                    let s2 = s1!
+                    let _ = s1!
                 } label: {
                     Text("Tap me... 1")
                 }
@@ -57,7 +57,7 @@ struct CrashView: View {
                 Button {
                     CrashManager.shared.log("Button 3 tapped")
                     let array: [String] = []
-                    let a = array[1]
+                    let _ = array[1]
                 } label: {
                     Text("Tap me... 3")
                 }
